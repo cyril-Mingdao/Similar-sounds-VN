@@ -1,0 +1,686 @@
+<!doctype html>
+<!--
+  【著作權聲明】
+  越南語拼讀投影 — 教師在大螢幕即時組合越南語的子音、母音、尾音、聲調並播音，學生拼出對應的臺灣台語羅馬字
+  Copyright © 2026 詹宗龍（臺中明道中學）. All rights reserved.
+  本網頁之程式碼、版面與教案設計著作權屬詹宗龍所有，僅供非營利之教育教學使用。
+  未經著作權人書面授權，不得重製、改作、散布或修改本網頁之全部或一部分。
+  臺羅拼寫依教育部《臺灣台語羅馬字拼音方案》；越南語音檔以 Microsoft Edge 語音合成（vi-VN-HoaiMyNeural，河內音）產生，
+  公布後點「台語羅馬字」播放的台語音由陽明交大台語 TTS 產生（â、ê 以 Praat 重塑為標準第 5 調）。
+  公布後點「聲母」「韻母」卡播放的聲母、韻母音檔為詹宗龍老師自行錄製（與〈羅馬字拼音互動遊戲〉同一批）。
+  臺語聲調依越南語聲調對應（入聲 sắc→8、nặng→4；huyền→3），平聲 ngang 依音檔實際音高（Praat 基頻分析）判定，並經教師審聽修正；只公布近似度 100% 及教師審聽修正過的組合，其餘顯示「無近似音」。
+-->
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="詹宗龍（臺中明道中學）">
+<meta name="copyright" content="© 2026 詹宗龍（臺中明道中學）。保留一切權利。">
+<title>聽越語．拼台羅</title>
+<style>
+:root{
+  --black:#111111; --yellow:#FFD400; --white:#FFFFFF; --gray-d:#2A2A2A; --gray-l:#F5F5F5;
+  --mute:#8A8A8A; --gap:clamp(8px,1.4vmin,16px);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--black);color:var(--white);display:flex;flex-direction:column;overflow:hidden;
+  font-family:"Noto Sans TC","Microsoft JhengHei","PingFang TC",sans-serif}
+.vi{font-family:"Segoe UI","Noto Sans","Arial",sans-serif}
+.tl{font-family:"Charis SIL","Gentium Plus","Segoe UI",Arial,sans-serif}
+button{font:inherit;cursor:pointer;color:inherit}
+
+header{flex:none;display:flex;align-items:center;gap:6px 16px;flex-wrap:wrap;padding:clamp(6px,1.2vmin,12px) var(--gap);border-bottom:3px solid var(--yellow)}
+header h1{margin:0;font-size:clamp(1rem,2.4vmin,1.6rem);color:var(--yellow);white-space:nowrap}
+.tools{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.tog{background:var(--gray-d);border:2px solid var(--gray-d);border-radius:999px;padding:clamp(3px,.8vmin,7px) clamp(10px,1.6vmin,16px);font-size:clamp(.8rem,1.8vmin,1rem);white-space:nowrap}
+.tog[aria-pressed="true"]{background:var(--yellow);color:var(--black);border-color:var(--yellow);font-weight:700}
+
+/* 兩欄：左鍵盤、右舞臺；整頁固定在視窗內，不出現捲軸 */
+main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr);gap:var(--gap);padding:var(--gap)}
+
+/* ---- 左：組合鍵盤（按鈕依可用高度自動縮放） ---- */
+.composer{min-height:0;background:var(--white);color:var(--black);border-radius:16px;padding:var(--gap);
+  display:grid;grid-template-rows:auto minmax(0,2fr) auto minmax(0,2fr) auto minmax(0,1fr) auto minmax(0,1fr);gap:clamp(4px,.8vmin,8px)}
+.composer h2{margin:0;font-size:clamp(.8rem,2vmin,1.1rem);display:flex;align-items:center;gap:8px;line-height:1.2}
+.composer h2 .n{display:inline-grid;place-items:center;width:1.5em;height:1.5em;border-radius:50%;background:var(--black);color:var(--yellow);font-size:.9em;flex:none}
+.grid{display:grid;gap:clamp(3px,.7vmin,8px);min-height:0}
+#gC{grid-template-columns:repeat(11,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
+#gV{grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
+#gT{grid-template-columns:repeat(11,minmax(0,1fr));grid-template-rows:minmax(0,1fr)}
+#gN{grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:minmax(0,1fr)}
+.jm{position:relative;container-type:size;min-width:0;min-height:0;border:2px solid var(--black);background:var(--white);border-radius:clamp(6px,1.2vmin,12px);padding:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05;overflow:hidden}
+.jm .vi{font-size:min(62cqh,52cqw)}
+.jm .t{display:none;font-size:min(24cqh,30cqw);color:#666}
+body.showmap .jm .vi{font-size:min(46cqh,46cqw)}
+body.showmap .jm .t{display:block}
+.jm .t.none{color:#bbb}
+.jm.zero .vi{font-size:min(36cqh,34cqw)}
+/* 聲調牌卡：a＋調符，下面固定顯示越南語名稱 */
+.jm .nm{font-size:min(24cqh,22cqw);color:#555;font-family:"Segoe UI","Noto Sans",Arial,sans-serif}
+.jm.tone .vi{font-size:min(48cqh,52cqw)}
+body.showmap .jm.tone .vi{font-size:min(38cqh,46cqw)}
+body.showmap .jm.tone .nm{font-size:min(18cqh,20cqw)}
+.jm.auto-on .nm{color:var(--white)}
+.jm.sel{background:var(--yellow);box-shadow:inset 0 -4px 0 var(--black)}
+body.hideviet .jm.sel{background:var(--white);box-shadow:none}
+@media (hover:hover){ .jm:hover{background:#FFF4B0} }
+/* 牌卡右上角的單音播放鈕 */
+.jm .sp{--s:max(18px,min(30cqh,34cqw));position:absolute;top:2px;right:2px;width:var(--s);height:var(--s);border-radius:50%;
+  background:var(--black);color:var(--yellow);display:grid;place-items:center;font-size:calc(var(--s)*.58);line-height:1}
+.jm .sp.on{background:var(--yellow);color:var(--black);box-shadow:0 0 0 2px var(--black)}
+@media (hover:hover){ .jm .sp:hover{background:var(--yellow);color:var(--black)} }
+/* 標題旁的輪播組：速度鈕＋輪播鈕，依序播放該列所有有 🔊 的牌卡 */
+.composer h2 .auto{display:inline-flex;align-items:center;gap:6px;margin-left:4px}
+.composer h2 .auto button{height:1.35em;border:2px solid var(--black);border-radius:999px;font-weight:700;line-height:1;padding:0;
+  display:inline-grid;place-items:center}
+.composer h2 .spd{min-width:3.2em;padding:0 .5em;background:var(--white);color:var(--black);font-size:.8em;height:1.7em}
+.composer h2 .ap{width:1.35em;background:var(--black);color:var(--yellow);font-size:1em}
+.composer h2 .ap::before{content:'▶';font-size:.62em;margin-left:.12em}
+.composer h2 .ap.on{background:var(--yellow);color:var(--black);animation:pulse .5s ease-in-out infinite alternate}
+.composer h2 .ap.on::before{content:'■';margin-left:0;font-size:.7em}
+@media (hover:hover){ .composer h2 .auto button:hover{filter:brightness(.92)} }
+/* 輪播中的牌卡：黑底黃字（與黃底的「已選取」區分） */
+.jm.auto-on{background:var(--black);box-shadow:0 0 0 3px var(--yellow) inset}
+.jm.auto-on .vi{color:var(--yellow)}
+.jm.auto-on .t{color:var(--white)}
+
+/* ---- 右：舞臺 ---- */
+.stage{min-height:0;display:grid;grid-template-rows:minmax(0,1.25fr) minmax(0,1fr) minmax(0,.5fr) auto;gap:var(--gap)}
+.show{container-type:size;min-height:0;background:var(--gray-d);border-radius:16px;position:relative;
+  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;padding:0 clamp(10px,2.4vw,40px) 0 clamp(6px,1.2vw,20px)}
+.syl{text-align:center;min-width:0}
+.syl .big{font-size:min(56cqh,34cqw,calc(62cqw / var(--n,1)));line-height:1;white-space:nowrap}
+/* 越南語拼寫可點：開 Glosbe 越中辭典查這個字（v2） */
+.syl .big a{color:inherit;text-decoration:none;border-bottom:.04em dashed transparent}
+@media (hover:hover){ .syl .big a:hover{color:var(--yellow);border-bottom-color:var(--yellow)} }
+.syl .formula{font-size:min(10cqh,5cqw);color:var(--yellow);margin-top:3cqh;letter-spacing:.05em;white-space:nowrap}
+.syl .empty{font-size:min(9cqh,5cqw);color:var(--mute)}
+body.hideviet .syl .big,body.hideviet .syl .formula{visibility:hidden}
+.ctrl{display:flex;flex-direction:column;align-items:center;gap:4cqh}
+.play{width:min(48cqh,26cqw);height:min(48cqh,26cqw);border-radius:50%;border:0;background:var(--yellow);font-size:min(22cqh,12cqw);box-shadow:0 .6cqh 0 #8a7300;color:var(--black)}
+.play:active{transform:translateY(.5cqh);box-shadow:none}
+.play.playing{animation:pulse .5s ease-in-out infinite alternate}
+@keyframes pulse{to{transform:scale(1.07)}}
+.minis{display:flex;gap:2cqw}
+.small{border:2px solid var(--yellow);background:transparent;color:var(--yellow);border-radius:999px;padding:1.5cqh 2.4cqw;font-size:min(8cqh,4cqw);white-space:nowrap;font-weight:700}
+.small.on{background:var(--yellow);color:var(--black)}
+.small.end{border-color:#FF6B6B;background:#FF6B6B;color:var(--black)}
+.msg{position:absolute;left:0;right:0;bottom:2cqh;text-align:center;color:var(--mute);font-size:min(6.5cqh,3.4cqw)}
+
+/* 答案卡 */
+.cards{min-height:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--gap)}
+.card{container-type:size;min-height:0;background:var(--white);color:var(--black);border-radius:14px;text-align:center;position:relative;overflow:hidden;
+  display:grid;grid-template-rows:auto minmax(0,1fr) auto;justify-items:center;align-items:center;padding:clamp(4px,1vh,12px) clamp(4px,.8vw,12px)}
+.card .lab{font-size:min(12cqh,11cqw);font-weight:700;color:#555;line-height:1.2}
+.card .val{font-size:min(46cqh,32cqw);font-weight:700;line-height:1.05;white-space:nowrap}
+.card .sub{font-size:min(9.5cqh,8cqw);color:#444;line-height:1.25;min-height:1.25em}
+.card.hid{background:var(--yellow);cursor:pointer}
+.full.hid{cursor:pointer}
+.full.playable{cursor:pointer}
+.card.playable{cursor:pointer}
+.card.playable .lab::after{content:' 🔊'}
+.card.saying .val{color:#8a6d00}
+.full .say{display:none;font-size:min(40cqh,6cqw);line-height:1}
+.full.playable .say{display:inline}
+.full.saying .val{color:#8a6d00}
+@media (hover:hover){ .card.hid:hover,.full.hid:hover{filter:brightness(.93)} }
+.card.none .val{font-size:min(20cqh,19cqw);color:var(--mute)}
+.flip{animation:flip .35s ease-out}
+@keyframes flip{from{transform:rotateY(90deg)}to{transform:rotateY(0)}}
+.full{container-type:size;min-height:0;background:var(--white);color:var(--black);border-radius:14px;display:grid;grid-template-rows:minmax(0,1fr) auto;padding:0 clamp(8px,1.6vw,28px) clamp(2px,.6vh,8px);overflow:hidden}
+.full .row{min-height:0;display:flex;align-items:center;justify-content:center;gap:clamp(8px,2vw,32px)}
+.full .src{text-align:center;font-size:min(13cqh,2.3cqw);color:#555;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.full.hid .src{visibility:hidden}
+.full .lab{font-weight:700;color:#555;font-size:min(24cqh,4.2cqw);white-space:nowrap}
+.full .val{font-size:min(62cqh,12cqw);font-weight:700;letter-spacing:.02em;line-height:1;white-space:nowrap}
+.full.hid .val{color:#ccc}
+.full.none .val{color:var(--mute);font-size:min(40cqh,7cqw)}
+.full .note{font-size:min(20cqh,3.4cqw);color:#444;max-width:40cqw;line-height:1.3}
+
+.actions{container-type:inline-size;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--gap)}
+.btn{min-width:0;border:2px solid var(--yellow);border-radius:12px;padding:clamp(6px,1.5vmin,14px) 4px;font-size:min(clamp(.8rem,2.2vmin,1.25rem),2.9cqw);font-weight:700;background:transparent;color:var(--yellow);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btn.pri{background:var(--yellow);color:var(--black)}
+.btn:disabled{opacity:.35;cursor:default}
+
+footer{flex:none;font-size:clamp(.6rem,1.4vmin,.75rem);color:#777;text-align:center;padding:0 var(--gap) 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* 直式或窄螢幕：上舞臺、下鍵盤，依然一頁塞滿不捲動 */
+@media (max-aspect-ratio:1/1){
+  main{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1.15fr) minmax(0,1fr)}
+  .stage{order:-1;grid-template-rows:minmax(0,1.1fr) minmax(0,1fr) minmax(0,.55fr) auto}
+  #gC{grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr))}
+  #gT{grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
+  .composer{grid-template-rows:auto minmax(0,3fr) auto minmax(0,2fr) auto minmax(0,2fr) auto minmax(0,1fr)}
+  .card .sub{display:none}
+  .full .note{display:none}
+  .btn{white-space:normal;line-height:1.15;font-size:min(.9rem,3.6cqw)}
+  header h1{font-size:clamp(.9rem,4vw,1.2rem)}
+  .tools{margin-left:0}
+}
+/* 手機：牌卡太小，播放鈕縮小並讓出右側空間，避免蓋住字母 */
+@media (max-width:600px){
+  .jm .sp{--s:15px;top:1px;right:1px;font-size:9px}
+  .jm.has-sp{padding-right:14px}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎧聽越語．拼台羅</h1>
+  <div class="tools">
+    <button class="tog" id="tgMap" aria-pressed="false" title="在越南語字母下顯示臺羅（教師備課用）">對照提示</button>
+    <button class="tog" id="tgHide" aria-pressed="false" title="只播音，不讓學生看到越南語拼寫">隱藏越文</button>
+    <button class="tog" id="tgFull" aria-pressed="false">⛶ 全螢幕</button>
+  </div>
+</header>
+
+<main>
+  <section class="composer" aria-label="越南語組合">
+    <h2><span class="n">1</span>子音<span class="auto"><button class="spd" data-auto="c" title="輪播速度（點一下切換）" aria-label="子音輪播速度">1.75x</button><button class="ap" data-auto="c" title="輪播子音" aria-label="輪播子音"></button></span></h2>
+    <div class="grid" id="gC"></div>
+    <h2><span class="n">2</span>母音<span class="auto"><button class="spd" data-auto="v" title="輪播速度（點一下切換）" aria-label="母音輪播速度">1.75x</button><button class="ap" data-auto="v" title="輪播母音" aria-label="輪播母音"></button></span></h2>
+    <div class="grid" id="gV"></div>
+    <h2><span class="n">3</span>尾音<span class="auto"><button class="spd" data-auto="t" title="輪播速度（點一下切換）" aria-label="尾音輪播速度">1.75x</button><button class="ap" data-auto="t" title="輪播尾音" aria-label="輪播尾音"></button></span></h2>
+    <div class="grid" id="gT"></div>
+    <h2><span class="n">4</span>聲調（dấu thanh）<span class="auto"><button class="spd" data-auto="n" title="輪播速度（點一下切換）" aria-label="聲調輪播速度">1.75x</button><button class="ap" data-auto="n" title="輪播聲調" aria-label="輪播聲調"></button></span></h2>
+    <div class="grid" id="gN"></div>
+  </section>
+
+  <section class="stage" aria-label="投影舞臺">
+    <div class="show">
+      <div class="syl" id="syl"><div class="empty">請老師點選子音和母音</div></div>
+      <div class="ctrl">
+        <button class="play" id="btnPlay" aria-label="播放" title="播放（空白鍵）">🔊</button>
+        <div class="minis">
+          <button class="small" id="btnSlow" title="慢速（S）">🐢 慢速</button>
+          <button class="small" id="btnTimer" title="倒數（T）">⏱ <span id="tLabel">15 秒</span></button>
+        </div>
+      </div>
+      <div class="msg" id="msg"></div>
+    </div>
+
+    <div class="cards">
+      <div class="card hid" id="cIni" title="點一下公布"><span class="lab">聲母</span><span class="val tl">？</span><span class="sub"></span></div>
+      <div class="card hid" id="cFin" title="點一下公布"><span class="lab">韻母</span><span class="val tl">？</span><span class="sub"></span></div>
+      <div class="card hid" id="cTone" title="點一下公布"><span class="lab">聲調</span><span class="val">？</span><span class="sub"></span></div>
+    </div>
+    <div class="full hid" id="cAll" title="點一下公布"><div class="row"><span class="lab">台語羅馬字</span><span class="val tl">？</span><span class="say" aria-hidden="true">🔊</span><span class="note"></span></div><div class="src"></div></div>
+
+    <div class="actions">
+      <button class="btn pri" id="btnStep" title="Enter">公布聲母</button>
+      <button class="btn" id="btnAll" title="A">全部公布</button>
+      <button class="btn" id="btnRand" title="R">🎲 隨機</button>
+      <button class="btn" id="btnClear" title="Esc">清空</button>
+    </div>
+  </section>
+</main>
+<footer>© 2026 詹宗龍（臺中明道中學）｜聲母韻母音：詹宗龍老師自錄｜台語音：陽明交大台語 TTS｜越南語語音：Microsoft Edge TTS（河內音）｜臺羅依教育部拼音方案　　簡報筆 ▶ 聲母→韻母→聲調→答案→台語音→下一題／◀ 倒退｜空白 播放｜S 慢速｜Enter 依序公布｜A 全部公布｜R 隨機｜T 倒數｜Esc 清空</footer>
+
+<script>/* 每次載入都取最新的題庫與共用程式，避免快取造成新舊檔混用 */
+document.write('<script src="data.js?v=' + Date.now() + '"><\/script><script src="common.js?v=' + Date.now() + '"><\/script>');</script>
+<script>
+(function(){
+'use strict';
+var D = window.VI_DATA, VI = window.VI, TONES = VI.TONES;
+var REC = {}; (D.rec||[]).forEach(function(a){ REC[a] = 1; });   // 已錄好的越南語音檔
+var TW = {}; (D.tw||[]).forEach(function(a){ TW[a] = 1; });   // 已錄好的台語音檔
+var CHECKED = {}; (D.checked||[]).forEach(function(a){ CHECKED[a] = 1; });   // 入聲尾音 -p -t -c -ch
+var TIMER_SEC = 15;
+var $ = function(id){ return document.getElementById(id); };
+var sel = {c:-1, v:-1, t:0, n:0};
+var cur = null;
+
+/* ---------- 組合計算 ---------- */
+/* 代碼＝子音＋母音＋尾音＋聲調（ca、canf、thaatj），拼寫由 build.py 依越南語正字法算好放在 D.spell */
+function analyse(){
+  if(sel.c<0 || sel.v<0) return null;
+  var c = D.cons[sel.c], v = D.vows[sel.v], t = D.codas[sel.t], n = D.vtones[sel.n];
+  var code = c.j + v.j + t.j + n.j, ch = D.spell[code];
+  if(!ch){
+    var bad;
+    if(CHECKED[t.j] && n.j!=='s' && n.j!=='j') bad = '越南語 -p -t -c -ch 結尾只能配 sắc（á）或 nặng（ạ）';
+    else if(!t.j && (v.j==='aw' || v.j==='aa')) bad = '越南語 ' + v.k + ' 後面一定要接尾音';
+    else bad = '越南語沒有「' + v.k + (t.j ? ' ＋ -' + t.k : '') + '」這種韻';
+    return {bad:bad, c:c, v:v, t:t, n:n};
+  }
+  var r = {ch:ch, c:c, v:v, t:t, n:n, code:code, info:null, why:''};
+  var info = VI.resolve(code);
+  /* 只有題庫內（近似度達門檻或教師審聽修正）的音才公布臺羅，其餘一律「無近似音」 */
+  if(info && info.inPool) r.info = info;
+  else if(info && info.excluded) r.why = '教師審聽後不列入';
+  else if(info) r.why = '近似度 ' + info.sim + '%' + (info.note ? '：' + info.note : '');
+  else r.why = (D.notes||[])[(D.why||{})[c.j + '|' + v.j + '|' + t.j]] || '臺語沒有這種組合';
+  return r;
+}
+
+/* ---------- 音訊 ---------- */
+var player = new Audio(), viVoice = null;
+function loadVoice(){
+  if(!('speechSynthesis' in window)) return;
+  viVoice = speechSynthesis.getVoices().filter(function(v){ return /^vi/i.test(v.lang); })[0] || null;
+}
+if('speechSynthesis' in window){ loadVoice(); speechSynthesis.onvoiceschanged = loadVoice; }
+function play(slow){
+  stopAuto();
+  if(!cur){ msg('請先點選子音和母音'); return; }
+  var btn = $('btnPlay'); btn.classList.add('playing');
+  var done = function(){ btn.classList.remove('playing'); };
+  if(REC[cur.code]){
+    if('speechSynthesis' in window) speechSynthesis.cancel();
+    player.pause();
+    player.src = VI.audioSrc(cur.code) + '?v=' + D.builtAt;
+    player.volume = 1;
+    player.playbackRate = slow ? 0.65 : 1;
+    if('preservesPitch' in player) player.preservesPitch = true;
+    player.onended = done; player.onerror = done;
+    var p = player.play(); if(p && p.catch) p.catch(done);
+  } else if(viVoice){
+    player.pause();
+    speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(cur.ch);
+    u.lang = 'vi-VN'; u.voice = viVoice; u.rate = slow ? 0.55 : 0.85;
+    u.onend = done; u.onerror = done;
+    speechSynthesis.speak(u);
+    msg('無近似音，未預錄音檔，以瀏覽器越南語語音播放');
+  } else {
+    done();
+    msg('無近似音，未預錄音檔（這台電腦也沒有越南語語音）');
+  }
+}
+function msg(s){ $('msg').textContent = s || ''; }
+/* 牌卡單音（build.py 以 Edge TTS 錄製，都在 audio\）：
+   子音念「子音＋a」（ba、ca…）；母音單念（ă、â 不能單獨念，不放鈕）；尾音念「a＋尾音」（am、áp…，入聲配 sắc）；聲調念 a 的六個調 */
+function jamoSrc(key, j){
+  var code = null;
+  if(key==='c') code = j + 'a';
+  else if(key==='v') code = j;
+  else if(key==='t') code = j ? 'a' + j + (CHECKED[j] ? 's' : '') : null;
+  else if(key==='n') code = 'a' + j;
+  return code && REC[code] ? VI.audioSrc(code) : null;
+}
+var spOn = null;
+function playJamo(src, el){
+  stopAuto();
+  if(spOn) spOn.classList.remove('on');
+  spOn = el; el.classList.add('on');
+  var done = function(){ el.classList.remove('on'); if(spOn===el) spOn = null; };
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  player.pause();
+  player.src = src + '?v=' + D.builtAt;
+  player.volume = 1; player.playbackRate = 1;
+  player.onended = done; player.onerror = done;
+  var p = player.play(); if(p && p.catch) p.catch(done);
+}
+/* 公布後點「台語羅馬字」：播放台語音（陽明交大台語 TTS） */
+function playTaigi(){
+  stopAuto();
+  var x = cur && cur.info; if(!x) return;
+  var key = x.ini + x.fin + x.tone, all = $('cAll');
+  if(!TW[key]){ msg('「'+x.tl+'」還沒有台語音檔，請重跑 build.py'); return; }
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  player.pause();
+  player.src = 'audio_tw/' + key + '.mp3?v=' + D.builtAt;
+  player.playbackRate = 1;
+  /* 教育部辭典原檔音量較大：只在播放時調低，不改動檔案（禁止改作） */
+  var moe = (D.twSrc || {})[key];
+  player.volume = moe ? 0.7 : 1;
+  all.classList.add('saying');
+  var done = function(){ all.classList.remove('saying'); };
+  player.onended = done; player.onerror = done;
+  var p = player.play(); if(p && p.catch) p.catch(done);
+}
+
+/* 公布後點聲母／韻母卡：播放詹宗龍老師自行錄製的聲母、韻母音檔
+   （與〈羅馬字拼音互動遊戲〉https://cyril-mingdao.github.io/spell/ 同一批，複製在 audio_spell\） */
+var SPELL = {ini:'b g h j k kh l m n ng p ph s t th ts tsh'.split(' '),
+             fin:'a ah ai ainn ak am an ang ann annh ap at au auh aunn e eh enn ennh i ia iah iak iam ian iang iann iap iat iau iauh iaunn ih ik im in ing inn innh io ioh iok iong ip it iu iuh iunn m ng o oh ok om ong onn onnh oo op u ua uah uai uainn uan uang uann uat ue ueh uh ui uih uinn un ut'.split(' ')};
+var SPELL_DIR = {ini:'initial', fin:'final'}, SPELL_CARD = {ini:'cIni', fin:'cFin'};
+function spellSrc(k){
+  var x = cur && cur.info; if(!x) return null;
+  var v = x[k];
+  return v && SPELL[k].indexOf(v) >= 0 ? 'audio_spell/' + SPELL_DIR[k] + '/' + v + '.mp3' : null;
+}
+function playSpell(k){
+  stopAuto();
+  var src = spellSrc(k), el = $(SPELL_CARD[k]);
+  if(!src){ msg(cur && cur.info && cur.info[k] ? '「' + cur.info[k] + '」沒有自錄音檔' : ''); return; }
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  player.pause();
+  player.src = src;
+  player.volume = 1; player.playbackRate = 1;
+  el.classList.add('saying');
+  var done = function(){ el.classList.remove('saying'); };
+  player.onended = done; player.onerror = done;
+  var p = player.play(); if(p && p.catch) p.catch(done);
+}
+
+/* ---------- 輪播：依序播放一整列牌卡的單音 ---------- */
+var AUTO_SPEEDS = [0.5, 0.75, 1, 1.5, 1.75];
+var autoSpeed = 1.75;   // 預設 1.75 倍
+try { var sv = parseFloat(localStorage.getItem('vi-auto-speed')); if(AUTO_SPEEDS.indexOf(sv) >= 0) autoSpeed = sv; } catch(e){}
+var autoRun = null;
+var AUTO_GRID = {c:'gC', v:'gV', t:'gT', n:'gN'};
+function showSpeed(){
+  Array.prototype.forEach.call(document.querySelectorAll('.composer .spd'), function(b){ b.textContent = autoSpeed + 'x'; });
+}
+/* 三列共用同一個速度；輪播中切換立即套用 */
+function cycleSpeed(){
+  autoSpeed = AUTO_SPEEDS[(AUTO_SPEEDS.indexOf(autoSpeed) + 1) % AUTO_SPEEDS.length];
+  try { localStorage.setItem('vi-auto-speed', String(autoSpeed)); } catch(e){}
+  showSpeed();
+  if(autoRun){ player.defaultPlaybackRate = autoSpeed; player.playbackRate = autoSpeed; }
+}
+function stopAuto(){
+  if(!autoRun) return;
+  var run = autoRun; autoRun = null;
+  run.cancelled = true;
+  player.pause();
+  player.defaultPlaybackRate = 1; player.playbackRate = 1;
+  if(run.finish) run.finish();
+  Array.prototype.forEach.call(document.querySelectorAll('.jm.auto-on'), function(b){ b.classList.remove('auto-on'); if(b._sp) b._sp.classList.remove('on'); });
+  Array.prototype.forEach.call(document.querySelectorAll('.composer .ap.on'), function(b){ b.classList.remove('on'); });
+}
+function toggleAuto(key){
+  var same = autoRun && autoRun.key === key;
+  stopAuto();
+  if(!same) runAuto(key);
+}
+function runAuto(key){
+  var tiles = Array.prototype.filter.call($(AUTO_GRID[key]).children, function(b){ return b._src; });
+  var run = {key:key, cancelled:false, finish:null};
+  autoRun = run;
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  if(spOn){ spOn.classList.remove('on'); spOn = null; }
+  document.querySelector('.composer .ap[data-auto="' + key + '"]').classList.add('on');
+  var i = 0;
+  (function next(){
+    if(run.cancelled) return;
+    if(i >= tiles.length){ if(autoRun === run) stopAuto(); return; }
+    var b = tiles[i++];
+    b.classList.add('auto-on'); b._sp.classList.add('on');
+    var ended = false, guard;
+    var finish = function(){
+      if(ended) return; ended = true;
+      clearTimeout(guard);
+      player.onended = player.onerror = null;
+      b.classList.remove('auto-on'); b._sp.classList.remove('on');
+      if(!run.cancelled) setTimeout(next, 250);
+    };
+    run.finish = finish;
+    guard = setTimeout(finish, 15000 / autoSpeed);
+    player.pause();
+    player.defaultPlaybackRate = autoSpeed;
+    player.src = b._src + '?v=' + D.builtAt;
+    player.volume = 1; player.playbackRate = autoSpeed;
+    if('preservesPitch' in player) player.preservesPitch = true;
+    player.onended = finish; player.onerror = finish;
+    var p = player.play(); if(p && p.catch) p.catch(finish);
+  })();
+}
+
+/* ---------- 鍵盤區 ---------- */
+/* 對照提示的臺語調：聲調列顯示舒聲／入聲各對應到第幾調 */
+function toneHint(x){
+  var a = x.tw ? String(x.tw) : (x.j==='' ? '1/7' : '—');
+  return x.twc ? a + '・入' + x.twc : a;
+}
+function buildGrid(id, list, key){
+  var box = $(id);
+  list.forEach(function(x, i){
+    var b = document.createElement('button');
+    var face, name, t;
+    if(key==='c'){ face = x.label; name = x.j ? x.label : '無子音'; t = x.tl===null ? '—' : (x.tl==='' ? '∅' : x.tl); }
+    else if(key==='v'){ face = x.k; name = x.k; var tl = x.tl!==null ? x.tl : x.tlc; t = tl===null ? '—' : tl; }
+    else if(key==='t'){ face = x.k; name = x.j ? '尾音 -' + x.k : '無尾音'; t = x.j ? '-' + x.tl : ''; }
+    else { face = ('a' + x.k).normalize('NFC'); name = x.name; t = toneHint(x); }
+    var zero = (key==='c' || key==='t') && x.j==='';
+    b.className = 'jm' + (zero ? ' zero' : '') + (key==='n' ? ' tone' : '');
+    b.innerHTML = '<span class="vi">'+face+'</span>' + (key==='n' ? '<span class="nm">'+x.name+'</span>' : '') +
+      '<span class="t tl'+(t==='—'?' none':'')+'">'+t+'</span>';
+    b.setAttribute('aria-label', key==='n' ? '聲調 ' + x.name + '（' + x.shape + '）' : name);
+    if(key==='n') b.title = x.name + '：' + x.shape;
+    b.addEventListener('click', function(){ sel[key] = i; update(true); });
+    /* 右上角播放鈕：只播這張牌卡的單音，不改變選取 */
+    var src = jamoSrc(key, x.j);
+    if(src){
+      var sp = document.createElement('span');
+      sp.className = 'sp'; sp.textContent = '🔊';
+      sp.setAttribute('role', 'button');
+      sp.setAttribute('aria-label', '播放 ' + name + ' 的音');
+      sp.title = '播放 ' + name + ' 的音';
+      b._src = src; b._sp = sp; b.classList.add('has-sp');
+      (function(src, sp){
+        sp.addEventListener('click', function(e){ e.stopPropagation(); playJamo(src, sp); });
+      })(src, sp);
+      b.appendChild(sp);
+    }
+    box.appendChild(b);
+  });
+}
+function markSel(){
+  [['gC','c'],['gV','v'],['gT','t'],['gN','n']].forEach(function(p){
+    Array.prototype.forEach.call($(p[0]).children, function(b,i){ b.classList.toggle('sel', i===sel[p[1]]); });
+  });
+}
+
+/* ---------- 舞臺 ---------- */
+function formula(r){
+  var parts = [];
+  if(r.c.j) parts.push(r.c.label);
+  parts.push(r.v.k);
+  if(r.t.j) parts.push('-' + r.t.k);
+  parts.push(r.n.name);
+  return parts.join(' ＋ ');
+}
+/* Glosbe 越南語→中文辭典（例：https://zh.glosbe.com/vi/zh/hi） */
+function dictUrl(w){ return 'https://zh.glosbe.com/vi/zh/' + encodeURIComponent(w.normalize('NFC')); }
+function update(sound){
+  markSel();
+  cur = analyse();
+  stopTimer();
+  msg('');
+  var syl = $('syl');
+  if(cur && cur.bad){
+    syl.innerHTML = '<div class="empty">' + cur.bad + '<br><span class="vi">（' + formula(cur) + '）</span></div>';
+    cur = null;
+  } else if(!cur){
+    var parts = [];
+    if(sel.c<0) parts.push('子音'); if(sel.v<0) parts.push('母音');
+    syl.innerHTML = '<div class="empty">請老師點選'+parts.join('和')+'</div>';
+  } else {
+    syl.innerHTML = '<div class="big vi" style="--n:'+cur.ch.length+'"><a href="'+dictUrl(cur.ch)+'" target="_blank" rel="noopener" title="到 Glosbe 越中辭典查「'+cur.ch+'」">'+cur.ch+'</a></div><div class="formula vi">'+formula(cur)+'</div>';
+  }
+  setStep(0);
+  if(sound && cur) play(false);
+}
+function flip(el){ el.classList.remove('flip'); void el.offsetWidth; el.classList.add('flip'); }
+function setCard(el, show, val, sub, none){
+  var wasHidden = el.classList.contains('hid');
+  el.classList.toggle('hid', !show);
+  el.classList.toggle('none', !!(show && none));
+  el.querySelector('.val').textContent = show ? val : '？';
+  el.querySelector('.sub').textContent = show ? (sub||'') : '';
+  if(show && wasHidden) flip(el);
+}
+/* 公布狀態：依序公布（Enter／按鈕）或直接點卡片個別公布 */
+var ORDER = ['ini','fin','tone','all'], shown = {};
+function setStep(n){
+  shown = {}; ORDER.forEach(function(k,i){ shown[k] = n > i; });
+  said = false;
+  render();
+}
+function render(){
+  var r = cur, x = r && r.info;
+  var NONE = '無近似音';
+  // 聲母
+  var iniVal = NONE, iniSub = r ? r.why : '';
+  if(x){
+    iniVal = x.ini==='' ? '∅' : x.ini;
+    iniSub = x.ini==='' ? '零聲母（'+r.c.note+'）' : r.c.label+(r.c.note ? '：'+r.c.note : '');
+  }
+  setCard($('cIni'), shown.ini && r, iniVal, iniSub, !x);
+  // 韻母
+  setCard($('cFin'), shown.fin && r, x ? x.fin : NONE,
+    x ? (r.v.k + (r.t.j ? ' ＋ 尾音 -'+r.t.k : '')) : r && r.why, !x);
+  // 聲調
+  var toneVal = NONE, toneSub = '';
+  if(x){
+    var ti = TONES[x.tone];
+    toneVal = x.tone + ' ' + ti.icon;
+    toneSub = '第' + x.tone + '調．' + ti.name + '（' + ti.shape + '）｜越南語 ' + r.n.name;
+  }
+  setCard($('cTone'), shown.tone && r, toneVal, toneSub, !x);
+  ['ini','fin'].forEach(function(k){
+    var el = $(SPELL_CARD[k]);
+    el.classList.toggle('playable', !!(shown[k] && spellSrc(k)));
+    if(!shown[k]) el.classList.remove('saying');
+  });
+  // 臺羅
+  var all = $('cAll'), showAll = shown.all && r;
+  var wasHidden = all.classList.contains('hid');
+  all.classList.toggle('hid', !showAll);
+  all.classList.toggle('none', !!(showAll && !x));
+  all.querySelector('.val').textContent = showAll ? (x ? x.tl : NONE) : '？';
+  all.classList.toggle('playable', !!(showAll && x && TW[x.ini + x.fin + x.tone]));
+  var note = '';
+  if(showAll && x){
+    note = (x.ini==='' ? '' : x.ini + ' ＋ ') + x.fin + ' ＋ 第' + x.tone + '調';
+    if(x.fixed) note += '（教師審聽）';
+  } else if(showAll){ note = r.why; }
+  all.querySelector('.note').textContent = note;
+  /* 台語音來源標示（台語羅馬字欄底端） */
+  var src = '', tkey = x ? x.ini + x.fin + x.tone : '';
+  if(showAll && x && TW[tkey]){
+    var moe = (D.twSrc || {})[tkey];
+    src = moe ? '台語音：教育部《臺灣台語常用詞辭典》「' + moe.hanji + '」（CC BY-ND 3.0 TW）' : '台語音：陽明交大台語 TTS';
+  }
+  all.querySelector('.src').textContent = src;
+  if(showAll && wasHidden) flip(all);
+  var labels = {ini:'公布聲母', fin:'公布韻母', tone:'公布聲調', all:'公布台語羅馬字'};
+  var nxt = ORDER.filter(function(k){ return !shown[k]; })[0];
+  $('btnStep').textContent = nxt ? labels[nxt] : '已全部公布';
+  $('btnStep').disabled = !r || !nxt;
+  $('btnAll').disabled = !r || !nxt;
+}
+function nextStep(){
+  var nxt = ORDER.filter(function(k){ return !shown[k]; })[0];
+  if(cur && nxt){ stopTimer(); shown[nxt] = true; render(); }
+}
+function revealOne(k){ if(cur && !shown[k]){ stopTimer(); shown[k] = true; render(); } }
+function revealAll(){ if(cur){ stopTimer(); setStep(4); } }
+function clearAll(){ sel = {c:-1, v:-1, t:0, n:0}; update(false); }
+/* 隨機只從題庫（近似度 ≥ 門檻或教師審聽過、且未被排除）抽 */
+var history = [];   // 隨機出題前的題目，供簡報筆「上一頁」退回
+/* 洗牌發題：題庫每題各出一次，全部輪過才重新洗牌（新一輪第一題不會跟上一題相同） */
+var bag = [], round = 0, roundSize = 0;
+var SEL = {};   // 代碼 → 鍵盤位置
+D.cons.forEach(function(c,i){ D.vows.forEach(function(v,j){ D.codas.forEach(function(t,k){ D.vtones.forEach(function(n,l){
+  SEL[c.j+v.j+t.j+n.j] = {c:i, v:j, t:k, n:l};
+}); }); }); });
+function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)), t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function randomPick(){
+  var pool = Object.keys(D.items).filter(function(code){
+    var r = VI.resolve(code); return r && r.inPool && REC[code];
+  });
+  if(!pool.length){ msg('題庫是空的'); return; }
+  bag = bag.filter(function(c){ return pool.indexOf(c) >= 0; });   // 審聽後被排除的題目移出
+  var now = cur && cur.code;
+  if(!bag.length){
+    bag = shuffle(pool.slice()); round++; roundSize = bag.length;
+    if(bag.length > 1 && bag[bag.length-1] === now){ var t = bag[0]; bag[0] = bag[bag.length-1]; bag[bag.length-1] = t; }
+  }
+  if(cur) history.push({c:sel.c, v:sel.v, t:sel.t, n:sel.n});
+  var code = bag.pop();
+  var s = SEL[code]; sel.c = s.c; sel.v = s.v; sel.t = s.t; sel.n = s.n;
+  update(true);
+  msg('第 ' + round + ' 輪：' + (roundSize - bag.length) + '／' + roundSize);
+}
+/* 簡報筆步驟：聲母 → 韻母 → 聲調 → 答案 → 播台語音 → 隨機；上一頁倒著走 */
+var said = false;   // 這一題是否已用簡報筆播過台語音
+function forward(){
+  var nxt = ORDER.filter(function(k){ return !shown[k]; })[0];
+  if(cur && nxt){ stopTimer(); shown[nxt] = true; render(); }
+  else if(cur && !said){ said = true; playTaigi(); }
+  else { said = false; randomPick(); }
+}
+function backward(){
+  var last = ORDER.filter(function(k){ return shown[k]; }).pop();
+  if(cur && said){ said = false; player.pause(); $('cAll').classList.remove('saying'); }
+  else if(cur && last){ stopTimer(); shown[last] = false; render(); }
+  else if(history.length){ sel = history.pop(); update(false); setStep(ORDER.length); said = true; }
+}
+
+/* ---------- 倒數 ---------- */
+var timerId = null, left = 0;
+function stopTimer(){
+  if(timerId){ clearInterval(timerId); timerId = null; }
+  $('tLabel').textContent = TIMER_SEC + ' 秒'; $('btnTimer').className = 'small';
+}
+function startTimer(){
+  if(timerId){ stopTimer(); return; }
+  left = TIMER_SEC; $('tLabel').textContent = left; $('btnTimer').className = 'small on';
+  timerId = setInterval(function(){
+    left--;
+    if(left<=0){ clearInterval(timerId); timerId = null; $('tLabel').textContent = '時間到'; $('btnTimer').className = 'small end'; return; }
+    $('tLabel').textContent = left;
+  }, 1000);
+}
+
+/* ---------- 開關 ---------- */
+function toggle(btn, cls){
+  var on = btn.getAttribute('aria-pressed')!=='true';
+  btn.setAttribute('aria-pressed', on);
+  document.body.classList.toggle(cls, on);
+}
+$('tgMap').addEventListener('click', function(){ toggle(this, 'showmap'); });
+$('tgHide').addEventListener('click', function(){ toggle(this, 'hideviet'); });
+$('tgFull').addEventListener('click', function(){
+  if(!document.fullscreenElement){ var p = document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); if(p && p.catch) p.catch(function(){}); }
+  else document.exitFullscreen();
+});
+document.addEventListener('fullscreenchange', function(){ $('tgFull').setAttribute('aria-pressed', !!document.fullscreenElement); });
+
+$('btnPlay').addEventListener('click', function(){ play(false); });
+$('btnSlow').addEventListener('click', function(){ play(true); });
+$('btnTimer').addEventListener('click', startTimer);
+$('btnStep').addEventListener('click', nextStep);
+$('btnAll').addEventListener('click', revealAll);
+$('btnRand').addEventListener('click', randomPick);
+$('btnClear').addEventListener('click', clearAll);
+[['cIni','ini'],['cFin','fin'],['cTone','tone']].forEach(function(p){
+  $(p[0]).addEventListener('click', function(){
+    if(shown[p[1]] && SPELL[p[1]]) playSpell(p[1]); else revealOne(p[1]);
+  });
+});
+$('cAll').addEventListener('click', function(){
+  if(shown.all) playTaigi(); else revealOne('all');
+});
+
+document.addEventListener('keydown', function(e){
+  if(e.ctrlKey || e.metaKey || e.altKey) return;
+  var k = e.key;
+  if(k===' '){ e.preventDefault(); play(false); }
+  else if(k==='Enter'){ e.preventDefault(); nextStep(); }
+  else if(k==='s' || k==='S'){ play(true); }
+  else if(k==='a' || k==='A'){ revealAll(); }
+  else if(k==='r' || k==='R'){ randomPick(); }
+  else if(k==='t' || k==='T'){ startTimer(); }
+  else if(k==='Escape'){ clearAll(); }
+  else if(k==='PageDown' || k==='ArrowRight' || k==='ArrowDown'){ e.preventDefault(); forward(); }
+  else if(k==='PageUp' || k==='ArrowLeft' || k==='ArrowUp'){ e.preventDefault(); backward(); }
+});
+
+buildGrid('gC', D.cons, 'c');
+buildGrid('gV', D.vows, 'v');
+buildGrid('gT', D.codas, 't');
+buildGrid('gN', D.vtones, 'n');
+Array.prototype.forEach.call(document.querySelectorAll('.composer .spd'), function(b){ b.addEventListener('click', cycleSpeed); });
+Array.prototype.forEach.call(document.querySelectorAll('.composer .ap'), function(b){ b.addEventListener('click', function(){ toggleAuto(b.dataset.auto); }); });
+showSpeed();
+update(false);
+})();
+</script>
+</body>
+</html>

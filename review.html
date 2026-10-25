@@ -1,0 +1,201 @@
+<!doctype html>
+<!--
+  【著作權聲明】
+  越南語拼讀投影．聲調審聽 — 教師逐一審聽題庫（近似度 100%）的越南語音檔，修正臺羅拼音與聲調，或排除不列入
+  Copyright © 2026 詹宗龍（臺中明道中學）. All rights reserved.
+  本網頁之程式碼、版面與教案設計著作權屬詹宗龍所有，僅供非營利之教育教學使用。
+  未經著作權人書面授權，不得重製、改作、散布或修改本網頁之全部或一部分。
+-->
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="詹宗龍（臺中明道中學）">
+<meta name="copyright" content="© 2026 詹宗龍（臺中明道中學）。保留一切權利。">
+<title>聲調審聽</title>
+<style>
+:root{--black:#111111;--yellow:#FFD400;--white:#FFFFFF;--gray-d:#2A2A2A;--gray-l:#F5F5F5;--line:#DDDDDD;--ok:#1E9E4A;--ng:#D93025}
+*{box-sizing:border-box}
+body{margin:0;background:var(--gray-l);color:var(--black);font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif}
+.vi{font-family:"Segoe UI","Noto Sans",Arial,sans-serif}
+.tl{font-family:"Charis SIL","Gentium Plus","Segoe UI",Arial,sans-serif}
+header{position:sticky;top:0;z-index:2;background:var(--black);color:var(--white);padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+header h1{margin:0;font-size:1.2rem;color:var(--yellow)}
+header a{color:var(--yellow)}
+.bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.f{background:var(--gray-d);color:var(--white);border:0;border-radius:999px;padding:5px 12px;cursor:pointer;font-size:.88rem}
+.f.on{background:var(--yellow);color:var(--black);font-weight:700}
+.act{background:var(--yellow);color:var(--black);border:0;border-radius:8px;padding:6px 12px;font-weight:700;cursor:pointer}
+.act.ghost{background:transparent;color:var(--yellow);border:1.5px solid var(--yellow)}
+.count{color:#ccc;font-size:.85rem}
+.intro{max-width:1150px;margin:12px auto 0;padding:0 16px;font-size:.92rem;line-height:1.7}
+.intro b{background:var(--yellow);padding:0 4px}
+main{max-width:1150px;margin:0 auto;padding:12px 16px 40px;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.it{background:var(--white);border:2.5px solid var(--white);border-radius:12px;padding:8px 10px;display:grid;grid-template-columns:auto 1fr auto;gap:2px 10px;align-items:center;position:relative}
+.it.fixed{border-color:var(--yellow)}
+.it.heard::before{content:"✓ 已聽";position:absolute;top:-9px;left:8px;background:var(--ok);color:#fff;font-size:.7rem;border-radius:99px;padding:0 6px}
+.it.excluded{opacity:.55;background:#eee;border-style:dashed;border-color:#999}
+.it .vi{font-size:1.7rem;line-height:1;cursor:pointer;grid-row:span 2;white-space:nowrap}
+.it .tl{font-size:1.35rem;font-weight:700}
+.it .sim{font-size:.75rem;color:#666;text-align:right}
+.it svg{grid-column:2/4;width:100%;height:26px;display:block;cursor:pointer}
+.it svg polyline{fill:none;stroke:var(--black);stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.it svg line{stroke:#eee;stroke-width:1}
+.tones{grid-column:1/-1;display:flex;gap:4px;margin-top:4px}
+.tones button,.ops button{flex:1;border:1.5px solid var(--black);background:var(--white);border-radius:6px;padding:3px 0;cursor:pointer;font-size:.85rem;position:relative}
+.tones button.on{background:var(--yellow);font-weight:700}
+.tones button.auto::after{content:"";position:absolute;top:2px;right:3px;width:5px;height:5px;border-radius:50%;background:#888}
+.ops{grid-column:1/-1;display:flex;gap:4px;margin-top:4px}
+.ops button{font-size:.8rem}
+.ops button.x{border-color:var(--ng);color:var(--ng)}
+.ops button.x.on{background:var(--ng);color:#fff}
+.edit{grid-column:1/-1;display:flex;gap:4px;margin-top:4px}
+.edit input{flex:1;min-width:0;font-size:1rem;padding:4px 8px;border:2px solid var(--black);border-radius:6px}
+.edit button{border:0;background:var(--black);color:var(--yellow);border-radius:6px;padding:4px 10px;cursor:pointer}
+.tag{grid-column:1/-1;font-size:.75rem;color:#8a6d00}
+footer{text-align:center;color:#888;font-size:.8rem;padding:0 16px 24px}
+@media (max-width:520px){ main{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<header>
+  <h1>🎧 聲調審聽</h1>
+  <a href="index.html">← 回投影頁</a>
+  <span class="count" id="count"></span>
+  <div class="bar" id="filters"></div>
+  <div class="bar" style="margin-left:auto">
+    <button class="act" id="btnExport">匯出修正檔</button>
+    <button class="act ghost" id="btnReset">清除本機修正</button>
+  </div>
+</header>
+<p class="intro">
+  這裡只列<b>近似度 100%</b> 的題庫（加上教師已審聽修正的音），投影頁也只公布這些音，其餘一律顯示「無近似音」。點越南語拼寫或曲線聽音（聽過會標 ✓），
+  聲調不對就點正確調號；連韻母都不同（例如聽起來帶喉塞 -h、ô 其實像 oo）就按 <b>✎ 改拼音</b> 直接打出聽到的臺羅，
+  可用調符或數字調（tah、ūm、um7）；不適合給學生練習的按 <b>不列入</b>。修正會立刻套用到同一瀏覽器的投影頁，
+  全部聽完按「匯出修正檔」把 <code>tone_overrides.json</code> 交回、重跑 build.py 即永久寫入。
+</p>
+<main id="list"></main>
+<footer>© 2026 詹宗龍（臺中明道中學）</footer>
+
+<script>document.write('<script src="data.js?v=' + Date.now() + '"><\/script><script src="common.js?v=' + Date.now() + '"><\/script>');</script>
+<script>
+(function(){
+'use strict';
+var D = window.VI_DATA, KO = window.VI, TONES = KO.TONES, HEARD_KEY = 'vi-review-heard';
+var heard = {};
+try{ heard = JSON.parse(localStorage.getItem(HEARD_KEY) || '{}') || {}; }catch(e){}
+function saveHeard(){ try{ localStorage.setItem(HEARD_KEY, JSON.stringify(heard)); }catch(e){} }
+
+/* 依鍵盤順序（子音 → 母音 → 尾音 → 聲調）排列 */
+var codes = [];
+D.cons.forEach(function(c){ D.vows.forEach(function(v){ D.codas.forEach(function(t){ D.vtones.forEach(function(n){
+  var code = c.j + v.j + t.j + n.j;
+  if(D.items[code]) codes.push(code);
+}); }); }); });
+function listed(r){ return r.sim >= D.poolMin || r.fixed; }
+
+var filter = 'all', editing = null;
+function spark(c){
+  var n = c.length, pts = c.map(function(y,i){ return (n<2?50:(i/(n-1))*100).toFixed(1)+','+(24-(y-1)/4*22).toFixed(1); }).join(' ');
+  return '<svg viewBox="0 0 100 26" preserveAspectRatio="none"><line x1="0" y1="13" x2="100" y2="13"/><polyline points="'+pts+'"/></svg>';
+}
+function card(r){
+  var opts = r.entering ? [4,8] : [1,2,3,5,7];
+  var o = '<div class="it'+(r.fixed?' fixed':'')+(r.excluded?' excluded':'')+(heard[r.code]?' heard':'')+'" data-code="'+r.code+'">' +
+    '<span class="vi" title="播放">'+r.ch+'</span><span class="tl">'+(r.excluded ? '不列入' : r.tl)+'</span>' +
+    '<span class="sim">'+r.sim+'%</span>' + spark(r.c);
+  if(editing===r.code){
+    o += '<div class="edit"><input class="tl" value="'+r.tl+'" placeholder="例：tah、ūm、um7" aria-label="聽到的臺羅"><button data-op="save">確定</button></div>';
+  } else if(!r.excluded){
+    o += '<div class="tones">' + opts.map(function(t){
+      return '<button class="'+(t===r.tone?'on ':'')+(t===r.autoTone && r.fin===D.items[r.code].fin?'auto':'')+'" data-t="'+t+'">'+t+' '+TONES[t].icon+'</button>';
+    }).join('') + '</div>';
+  }
+  o += '<div class="ops"><button data-op="edit">✎ 改拼音</button>' +
+       '<button class="x'+(r.excluded?' on':'')+'" data-op="x">'+(r.excluded?'恢復列入':'不列入')+'</button>' +
+       (r.fixed ? '<button data-op="auto">↺ 回自動</button>' : '') + '</div>';
+  if(r.fixed && !r.excluded) o += '<div class="tag">自動判定：'+KO.markTone(D.items[r.code].ini+D.items[r.code].fin, r.autoTone)+'</div>';
+  return o + '</div>';
+}
+function all(){ return codes.map(KO.resolve).filter(listed); }
+function render(){
+  var rs = all(), shown = rs.filter(function(r){
+    if(filter==='all') return true;
+    if(filter==='fixed') return r.fixed && !r.excluded;
+    if(filter==='x') return r.excluded;
+    if(filter==='todo') return !heard[r.code];
+    return !r.excluded && String(r.tone)===filter;
+  });
+  document.getElementById('list').innerHTML = shown.map(card).join('');
+  var nh = rs.filter(function(r){ return heard[r.code]; }).length;
+  var nx = rs.filter(function(r){ return r.excluded; }).length;
+  document.getElementById('count').textContent = '題庫 '+(rs.length-nx)+' 個｜已聽 '+nh+'／'+rs.length+'｜顯示 '+shown.length;
+  renderFilters(rs);
+  if(editing){ var inp = document.querySelector('.edit input'); if(inp){ inp.focus(); inp.select(); } }
+}
+function renderFilters(rs){
+  var counts = {};
+  rs.forEach(function(r){ if(!r.excluded) counts[r.tone] = (counts[r.tone]||0)+1; });
+  var fs = [['all','全部'],['todo','未聽']].concat([1,2,3,5,7,4,8].map(function(t){ return [String(t), t+TONES[t].icon+' '+(counts[t]||0)]; }))
+    .concat([['fixed','已修正'],['x','不列入']]);
+  document.getElementById('filters').innerHTML = fs.map(function(f){
+    return '<button class="f'+(filter===f[0]?' on':'')+'" data-f="'+f[0]+'">'+f[1]+'</button>';
+  }).join('');
+}
+
+var player = new Audio();
+function current(code){ return KO.resolve(code); }
+function saveEdit(code){
+  var inp = document.querySelector('.edit input'), p = KO.parseTl(inp && inp.value);
+  editing = null;
+  if(p){
+    var it = D.items[code];
+    if(p.ini===it.ini && p.fin===it.fin && p.tone===it.tone) KO.setOverride(code, null);
+    else KO.setOverride(code, {tl: KO.markTone(p.ini+p.fin, p.tone)});
+  }
+  render();
+}
+document.getElementById('list').addEventListener('click', function(e){
+  var el = e.target.closest('.it'); if(!el) return;
+  var code = el.dataset.code, r = current(code);
+  if(e.target.closest('.vi') || e.target.closest('svg')){
+    player.src = KO.audioSrc(code)+'?v='+D.builtAt; player.play();
+    if(!heard[code]){ heard[code] = 1; saveHeard(); el.classList.add('heard'); render(); }
+    return;
+  }
+  var b = e.target.closest('button'); if(!b) return;
+  if(b.dataset.t){
+    var t = +b.dataset.t, it = D.items[code];
+    if(r.ini===it.ini && r.fin===it.fin && t===it.tone) KO.setOverride(code, null);
+    else KO.setOverride(code, {tl: KO.markTone(r.ini + r.fin, t)});
+  } else if(b.dataset.op==='edit'){ editing = editing===code ? null : code; }
+  else if(b.dataset.op==='save'){ saveEdit(code); return; }
+  else if(b.dataset.op==='x'){
+    if(r.excluded){ KO.setOverride(code, null); }
+    else KO.setOverride(code, {x:1});
+  } else if(b.dataset.op==='auto'){ KO.setOverride(code, null); }
+  render();
+});
+document.getElementById('list').addEventListener('keydown', function(e){
+  if(e.target.matches('.edit input')){
+    if(e.key==='Enter') saveEdit(e.target.closest('.it').dataset.code);
+    else if(e.key==='Escape'){ editing = null; render(); }
+  }
+});
+document.getElementById('filters').addEventListener('click', function(e){
+  var b = e.target.closest('[data-f]'); if(!b) return;
+  filter = b.dataset.f; render();
+});
+document.getElementById('btnExport').addEventListener('click', function(){
+  var blob = new Blob([JSON.stringify(KO.exportOverrides(), null, 1)], {type:'application/json'});
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tone_overrides.json'; a.click();
+});
+document.getElementById('btnReset').addEventListener('click', function(){
+  if(!confirm('確定清除這台電腦上的審聽修正？（已寫入 data.js 的修正不受影響）')) return;
+  KO.clearLocal(); render();
+});
+render();
+})();
+</script>
+</body>
+</html>
