@@ -32,7 +32,7 @@
 ## 素材來源
 
 - 越南語音檔：Microsoft Edge 語音合成（vi-VN-HoaiMyNeural，北部河內音），起音淡入並統一音量
-- 台語音檔（`audio_tw/`）：部分取自教育部《[臺灣台語常用詞辭典](https://sutian.moe.edu.tw/)》同音讀單字詞條的音檔（著作權屬教育部，依[創用CC 姓名標示－禁止改作 3.0 臺灣](https://creativecommons.org/licenses/by-nd/3.0/tw/)授權條款以原檔使用，未經剪輯或改作），其餘由陽明交大台語 TTS 產生
+- 台語音檔（`audio_tw/`）：部分取自教育部《[臺灣台語常用詞辭典](https://sutian.moe.edu.tw/)》同音讀單字詞條的音檔（著作權屬教育部，依[創用CC 姓名標示－禁止改作 3.0 臺灣](https://creativecommons.org/licenses/by-nd/3.0/tw/)授權條款以原檔使用，未經剪輯或改作），其餘由陽明交大台語 TTS（男聲、台北腔；v3 起由女聲改男聲） 產生
 - 台語羅馬字依教育部《臺灣台語羅馬字拼音方案》
 
 ---
