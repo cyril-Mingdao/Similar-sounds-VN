@@ -196,6 +196,7 @@ footer{flex:none;font-size:clamp(.6rem,1.4vmin,.75rem);color:#777;text-align:cen
         <div class="minis">
           <button class="small" id="btnSlow" title="慢速（S）">🐢 慢速</button>
           <button class="small" id="btnTimer" title="倒數（T）">⏱ <span id="tLabel">15 秒</span></button>
+          <button class="small" id="btnRep" title="自動播放次數：點選字母、隨機、簡報筆下一頁時連播幾次（點一下切換 1～3 次）">🔁 <span id="repLabel">2 次</span></button>
         </div>
       </div>
       <div class="msg" id="msg"></div>
@@ -262,11 +263,16 @@ function loadVoice(){
   viVoice = speechSynthesis.getVoices().filter(function(v){ return /^vi/i.test(v.lang); })[0] || null;
 }
 if('speechSynthesis' in window){ loadVoice(); speechSynthesis.onvoiceschanged = loadVoice; }
-function play(slow){
+function play(slow, times){
   stopAuto();
+  var seq = repSeq;
   if(!cur){ msg('請先點選子音和母音'); return; }
   var btn = $('btnPlay'); btn.classList.add('playing');
-  var done = function(){ btn.classList.remove('playing'); };
+  var done = function(){
+    btn.classList.remove('playing');
+    /* 連播：播完隔 0.5 秒再播，共 times 次；中途有其他播放（stopAuto）就取消 */
+    if(times > 1 && seq === repSeq && !repTimer) repTimer = setTimeout(function(){ repTimer = null; if(seq === repSeq) play(slow, times - 1); }, 500);
+  };
   if(REC[cur.code]){
     if('speechSynthesis' in window) speechSynthesis.cancel();
     player.pause();
@@ -356,6 +362,17 @@ function playSpell(k){
   var p = player.play(); if(p && p.catch) p.catch(done);
 }
 
+/* ---------- 自動播放次數：點選字母、隨機、簡報筆下一頁時連播 1～3 次，預設 2 次 ---------- */
+var repeatN = 2, repTimer = null, repSeq = 0;
+try { var rv = parseInt(localStorage.getItem('vi-play-times'), 10); if(rv >= 1 && rv <= 3) repeatN = rv; } catch(e){}
+function cancelRepeat(){ repSeq++; if(repTimer){ clearTimeout(repTimer); repTimer = null; } }
+function showRepeat(){ $('repLabel').textContent = repeatN + ' 次'; }
+function cycleRepeat(){
+  repeatN = repeatN % 3 + 1;
+  try { localStorage.setItem('vi-play-times', String(repeatN)); } catch(e){}
+  showRepeat();
+}
+
 /* ---------- 輪播：依序播放一整列牌卡的單音 ---------- */
 var AUTO_SPEEDS = [0.5, 0.75, 1, 1.5, 1.75];
 var autoSpeed = 1.75;   // 預設 1.75 倍
@@ -373,6 +390,7 @@ function cycleSpeed(){
   if(autoRun){ player.defaultPlaybackRate = autoSpeed; player.playbackRate = autoSpeed; }
 }
 function stopAuto(){
+  cancelRepeat();
   if(!autoRun) return;
   var run = autoRun; autoRun = null;
   run.cancelled = true;
@@ -493,7 +511,7 @@ function update(sound){
     syl.innerHTML = '<div class="big vi" style="--n:'+cur.ch.length+'"><a href="'+dictUrl(cur.ch)+'" target="_blank" rel="noopener" title="到 Glosbe 越中辭典查「'+cur.ch+'」">'+cur.ch+'</a></div><div class="formula vi">'+formula(cur)+'</div>';
   }
   setStep(0);
-  if(sound && cur) play(false);
+  if(sound && cur) play(false, repeatN);
 }
 function flip(el){ el.classList.remove('flip'); void el.offsetWidth; el.classList.add('flip'); }
 function setCard(el, show, val, sub, none){
@@ -645,6 +663,7 @@ document.addEventListener('fullscreenchange', function(){ $('tgFull').setAttribu
 $('btnPlay').addEventListener('click', function(){ play(false); });
 $('btnSlow').addEventListener('click', function(){ play(true); });
 $('btnTimer').addEventListener('click', startTimer);
+$('btnRep').addEventListener('click', cycleRepeat);
 $('btnStep').addEventListener('click', nextStep);
 $('btnAll').addEventListener('click', revealAll);
 $('btnRand').addEventListener('click', randomPick);
@@ -679,6 +698,7 @@ buildGrid('gN', D.vtones, 'n');
 Array.prototype.forEach.call(document.querySelectorAll('.composer .spd'), function(b){ b.addEventListener('click', cycleSpeed); });
 Array.prototype.forEach.call(document.querySelectorAll('.composer .ap'), function(b){ b.addEventListener('click', function(){ toggleAuto(b.dataset.auto); }); });
 showSpeed();
+showRepeat();
 update(false);
 })();
 </script>
